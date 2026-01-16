@@ -4,6 +4,7 @@ import { ScoreLeadCommand } from "@/server/application/commands/score-lead.comma
 import { SupabaseLeadRepository } from "@/server/infrastructure/repositories/supabase-lead.repository";
 import { SupabaseAIUsageRepository } from "@/server/infrastructure/repositories/supabase-ai-usage.repository";
 import { OpenAIScoringService } from "@/server/infrastructure/services/openai-scoring.service";
+import { broadcastLeadsUpdated } from "@/server/infrastructure/services/broadcast.service";
 
 function isRateLimitError(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
@@ -44,7 +45,7 @@ function extractRetryAfter(error: unknown): string {
   return "1m";
 }
 
-async function executeScoring(leadId: string): Promise<ScoreLeadResult> {
+async function executeScoringAndBroadcast(leadId: string): Promise<ScoreLeadResult> {
   "use step";
 
   const leadRepository = new SupabaseLeadRepository();
@@ -58,7 +59,14 @@ async function executeScoring(leadId: string): Promise<ScoreLeadResult> {
   );
 
   try {
-    return await command.execute(leadId);
+    const result = await command.execute(leadId);
+
+    const updatedLead = await leadRepository.findById(leadId);
+    if (updatedLead) {
+      await broadcastLeadsUpdated([updatedLead]);
+    }
+
+    return result;
   } catch (error) {
     if (error instanceof Error && error.message.startsWith("Lead not found:")) {
       throw new FatalError(error.message);
@@ -67,7 +75,7 @@ async function executeScoring(leadId: string): Promise<ScoreLeadResult> {
     if (isRateLimitError(error)) {
       const retryAfter = extractRetryAfter(error);
       throw new RetryableError("Rate limited by AI provider", {
-        retryAfter,
+        retryAfter: retryAfter as any,
       });
     }
 
@@ -82,7 +90,7 @@ export async function scoreLeadWorkflow(
 
   console.log(`Starting scoring workflow for lead ${leadId}`);
 
-  const result = await executeScoring(leadId);
+  const result = await executeScoringAndBroadcast(leadId);
 
   console.log(
     `Completed scoring workflow for lead ${leadId}, score: ${result.score}`,

@@ -2,6 +2,7 @@ import type { ILeadRepository } from '@/server/domain/interfaces/repositories/le
 import type { IQueueService } from '@/server/domain/interfaces/services/queue-service.interface';
 import type { CreateLeadInput, Lead } from '@/server/domain/entities/lead';
 import type { CsvRow } from '@/types/csv';
+import { broadcastLeadsUpdated } from '@/server/infrastructure/services/broadcast.service';
 
 export interface UploadLeadsResult {
   leads: Lead[];
@@ -35,6 +36,8 @@ export class UploadLeadsCommand {
     const leadInputs = rows.map(mapCsvRowToLeadInput);
     const leads = await this.leadRepository.create(leadInputs);
     const leadIds = leads.map((lead) => lead.id);
+
+    await broadcastLeadsUpdated(leads);
 
     if (this.queueService) {
       await this.queueService.enqueueLeads(leadIds);
