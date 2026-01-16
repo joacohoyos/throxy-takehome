@@ -115,7 +115,10 @@ export class SupabaseLeadRepository implements ILeadRepository {
 
     const { data, error } = await supabase
       .from('leads')
-      .insert(rows)
+      .upsert(rows, {
+        onConflict: 'lead_first_name,lead_last_name,lead_job_title,account_name',
+        ignoreDuplicates: true,
+      })
       .select();
 
     if (error) throw error;

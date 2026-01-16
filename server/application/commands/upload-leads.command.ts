@@ -1,4 +1,5 @@
 import type { ILeadRepository } from '@/server/domain/interfaces/repositories/lead-repository.interface';
+import type { IQueueService } from '@/server/domain/interfaces/services/queue-service.interface';
 import type { CreateLeadInput, Lead } from '@/server/domain/entities/lead';
 import type { CsvRow } from '@/types/csv';
 
@@ -21,7 +22,10 @@ function mapCsvRowToLeadInput(row: CsvRow): CreateLeadInput {
 }
 
 export class UploadLeadsCommand {
-  constructor(private leadRepository: ILeadRepository) {}
+  constructor(
+    private leadRepository: ILeadRepository,
+    private queueService?: IQueueService
+  ) {}
 
   async execute(rows: CsvRow[]): Promise<UploadLeadsResult> {
     if (rows.length === 0) {
@@ -30,11 +34,16 @@ export class UploadLeadsCommand {
 
     const leadInputs = rows.map(mapCsvRowToLeadInput);
     const leads = await this.leadRepository.create(leadInputs);
+    const leadIds = leads.map((lead) => lead.id);
+
+    if (this.queueService) {
+      await this.queueService.enqueueLeads(leadIds);
+    }
 
     return {
       leads,
       count: leads.length,
-      leadIds: leads.map((lead) => lead.id),
+      leadIds,
     };
   }
 }
