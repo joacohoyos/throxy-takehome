@@ -60,62 +60,165 @@ GEMINI_OUTPUT_TOKEN_COST=0.40
 ```
 throxy/
 ├── app/
-│   ├── layout.tsx                    # Root layout with providers
-│   ├── page.tsx                      # Main dashboard page
-│   ├── globals.css                   # Global styles + Tailwind
+│   ├── layout.tsx                        # Root layout with providers
+│   ├── page.tsx                          # Main dashboard page
+│   ├── globals.css                       # Global styles + Tailwind
 │   └── api/
 │       ├── leads/
-│       │   ├── upload/route.ts       # POST - CSV upload & enqueue
-│       │   ├── route.ts              # GET - Fetch leads with sorting
-│       │   ├── progress/route.ts     # GET - Processing progress stats
-│       │   └── export/route.ts       # GET - Export CSV
+│       │   ├── upload/route.ts           # POST - CSV upload & enqueue
+│       │   ├── route.ts                  # GET - Fetch leads with sorting
+│       │   ├── progress/route.ts         # GET - Processing progress stats
+│       │   └── export/route.ts           # GET - Export CSV
 │       ├── analytics/
-│       │   └── route.ts              # GET - AI usage analytics
+│       │   └── route.ts                  # GET - AI usage analytics
 │       └── queue/
-│           └── process/route.ts      # POST - Queue consumer for scoring
-├── components/
-│   ├── ui/                           # shadcn/ui components
-│   ├── providers/
-│   │   ├── query-provider.tsx        # TanStack Query provider
-│   │   └── realtime-provider.tsx     # Supabase realtime context
-│   ├── csv-upload.tsx                # Upload dropzone component
-│   ├── leads-table.tsx               # Main leads display table
-│   ├── progress-indicator.tsx        # Processing progress bar
-│   ├── export-button.tsx             # CSV export button
-│   └── score-badge.tsx               # Visual score indicator
-├── hooks/
-│   ├── use-leads.ts                  # TanStack Query hook for leads
-│   ├── use-upload.ts                 # Upload mutation hook
-│   ├── use-progress.ts               # Progress polling hook
-│   ├── use-realtime-leads.ts         # Supabase realtime subscription
-│   └── use-export.ts                 # CSV export hook
-├── stores/
-│   ├── upload-store.ts               # Upload state (progress, errors)
-│   └── table-store.ts                # Table state (sorting)
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts                 # Browser Supabase client
-│   │   ├── server.ts                 # Server Supabase client
-│   │   └── admin.ts                  # Service role client for queue
-│   ├── query-client.ts               # TanStack Query config
-│   ├── csv-parser.ts                 # CSV parsing & validation
-│   ├── ai/
-│   │   ├── scoring-prompt.ts         # AI prompt construction
-│   │   └── gemini-client.ts          # Vercel AI SDK setup
-│   └── utils.ts                      # cn() helper
-├── types/
-│   ├── lead.ts                       # Lead type definitions
-│   ├── csv.ts                        # CSV schema types
-│   └── api.ts                        # API response types
-├── constants/
-│   └── persona.ts                    # Persona spec as structured data
+│           └── process/route.ts          # POST - Queue consumer for scoring
+│
+├── features/                             # Feature-based modules
+│   ├── leads/                            # Lead management feature
+│   │   ├── components/
+│   │   │   ├── leads-table.tsx           # Main leads display table
+│   │   │   ├── score-badge.tsx           # Visual score indicator
+│   │   │   └── leads-table-skeleton.tsx  # Loading skeleton
+│   │   ├── hooks/
+│   │   │   ├── use-leads.ts              # TanStack Query hook for leads
+│   │   │   └── use-realtime-leads.ts     # Supabase realtime subscription
+│   │   ├── lib/
+│   │   │   └── lead-utils.ts             # Lead-specific utilities
+│   │   ├── stores/
+│   │   │   └── table-store.ts            # Table state (sorting)
+│   │   └── types/
+│   │       └── index.ts                  # Lead types re-exported
+│   │
+│   ├── upload/                           # CSV upload feature
+│   │   ├── components/
+│   │   │   └── csv-upload.tsx            # Upload dropzone component
+│   │   ├── hooks/
+│   │   │   └── use-upload.ts             # Upload mutation hook
+│   │   ├── lib/
+│   │   │   └── csv-parser.ts             # CSV parsing & validation
+│   │   └── stores/
+│   │       └── upload-store.ts           # Upload state (progress, errors)
+│   │
+│   ├── scoring/                          # AI scoring feature
+│   │   ├── lib/
+│   │   │   ├── scoring-prompt.ts         # AI prompt construction
+│   │   │   └── gemini-client.ts          # Vercel AI SDK setup
+│   │   └── constants/
+│   │       └── persona.ts                # Persona spec as structured data
+│   │
+│   ├── progress/                         # Progress tracking feature
+│   │   ├── components/
+│   │   │   └── progress-indicator.tsx    # Processing progress bar
+│   │   └── hooks/
+│   │       └── use-progress.ts           # Progress polling hook
+│   │
+│   ├── export/                           # Export feature
+│   │   ├── components/
+│   │   │   └── export-button.tsx         # CSV export button
+│   │   └── hooks/
+│   │       └── use-export.ts             # CSV export hook
+│   │
+│   └── analytics/                        # Analytics feature
+│       ├── components/
+│       │   └── analytics-card.tsx        # Analytics display (optional)
+│       └── hooks/
+│           └── use-analytics.ts          # Analytics data hook
+│
+├── components/                           # Shared components
+│   ├── ui/                               # shadcn/ui components
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   ├── input.tsx
+│   │   ├── table.tsx
+│   │   ├── progress.tsx
+│   │   ├── badge.tsx
+│   │   ├── dropdown-menu.tsx
+│   │   └── sonner.tsx
+│   ├── common/                           # Common reusable components
+│   │   ├── error-boundary.tsx
+│   │   └── loading-spinner.tsx
+│   └── providers/
+│       └── query-provider.tsx            # TanStack Query provider
+│
+├── hooks/                                # Global shared hooks
+│   └── use-supabase.ts                   # Supabase client hook
+│
+├── stores/                               # Global Zustand stores
+│   └── app-store.ts                      # App-wide state (if needed)
+│
+├── server/                               # Server-side hexagonal architecture
+│   ├── domain/                           # Domain layer (entities & interfaces)
+│   │   ├── entities/
+│   │   │   ├── lead.ts                   # Lead entity
+│   │   │   └── ai-usage.ts               # AI usage entity
+│   │   └── interfaces/
+│   │       ├── repositories/
+│   │       │   ├── lead-repository.interface.ts
+│   │       │   └── ai-usage-repository.interface.ts
+│   │       └── services/
+│   │           ├── scoring-service.interface.ts
+│   │           └── queue-service.interface.ts
+│   │
+│   ├── application/                      # Application layer (use cases)
+│   │   ├── commands/                     # Write operations
+│   │   │   ├── upload-leads.command.ts
+│   │   │   ├── score-lead.command.ts
+│   │   │   └── update-lead-status.command.ts
+│   │   └── queries/                      # Read operations
+│   │       ├── get-leads.query.ts
+│   │       ├── get-lead-progress.query.ts
+│   │       ├── get-analytics.query.ts
+│   │       └── export-leads.query.ts
+│   │
+│   └── infrastructure/                   # Infrastructure layer (implementations)
+│       ├── repositories/
+│       │   ├── supabase-lead.repository.ts
+│       │   └── supabase-ai-usage.repository.ts
+│       ├── services/
+│       │   ├── gemini-scoring.service.ts
+│       │   └── vercel-queue.service.ts
+│       └── supabase/
+│           ├── client.ts                 # Browser Supabase client
+│           ├── server.ts                 # Server Supabase client
+│           └── admin.ts                  # Service role client
+│
+├── lib/                                  # Shared utilities
+│   ├── utils.ts                          # cn() helper
+│   └── query-client.ts                   # TanStack Query config
+│
+├── types/                                # Shared type definitions
+│   ├── lead.ts                           # Lead type definitions
+│   ├── csv.ts                            # CSV schema types
+│   └── api.ts                            # API response types
+│
 └── supabase/
-    ├── config.toml                   # Supabase CLI config
+    ├── config.toml                       # Supabase CLI config
     └── migrations/
         ├── 001_create_leads_table.sql
         ├── 002_create_ai_usage_table.sql
         └── 003_enable_rls.sql
 ```
+
+### Architecture Overview
+
+#### Client-Side: Feature-Based Structure
+- **`features/`**: Each feature is self-contained with its own components, hooks, stores, and utilities
+- **`components/ui/`**: shadcn/ui primitives (buttons, tables, etc.)
+- **`components/common/`**: Shared components used across features (error boundaries, spinners)
+- **`hooks/`**: Global hooks shared across features
+- **`stores/`**: Global Zustand stores for app-wide state
+
+#### Server-Side: Hexagonal Architecture
+- **Domain Layer** (`server/domain/`): Pure business logic, entities, and interfaces
+  - No external dependencies
+  - Defines repository and service interfaces
+- **Application Layer** (`server/application/`): Use cases orchestrating domain logic
+  - Commands for write operations (mutations)
+  - Queries for read operations
+- **Infrastructure Layer** (`server/infrastructure/`): External service implementations
+  - Repository implementations (Supabase)
+  - Service implementations (Gemini, Vercel Queue)
 
 ### Database Schema (Supabase Migrations)
 
@@ -219,9 +322,9 @@ Key scoring rules from persona_spec.md:
 
 ## Task Checklist
 
-### Phase 1: Project Setup & Foundation
+### Phase 1: Project Setup & Foundation ✅ COMPLETED
 
-#### 1.1 Install Core Dependencies
+#### 1.1 Install Core Dependencies ✅
 Install npm packages for state management and data fetching:
 - `@tanstack/react-query` - server state management
 - `zustand` - client state management
@@ -230,16 +333,16 @@ Install npm packages for state management and data fetching:
 - `zod` - schema validation
 - `clsx`, `tailwind-merge`, `class-variance-authority`, `lucide-react` - utilities
 
-#### 1.2 Install AI & Queue Dependencies
+#### 1.2 Install AI & Queue Dependencies ✅
 Install npm packages for AI scoring and queue processing:
 - `ai` and `@ai-sdk/google` - Vercel AI SDK with Gemini
 - `@vercel/queue` - queue processing
 
-#### 1.3 Initialize shadcn/ui
+#### 1.3 Initialize shadcn/ui ✅
 Run `pnpm dlx shadcn@latest init` and add components:
 - button, card, input, table, progress, badge, dropdown-menu, sonner
 
-#### 1.4 Create Environment Configuration
+#### 1.4 Create Environment Configuration ✅
 Create `.env.local` and `.env.example` with:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
@@ -247,111 +350,228 @@ Create `.env.local` and `.env.example` with:
 - `GOOGLE_GENERATIVE_AI_API_KEY`
 - `GEMINI_INPUT_TOKEN_COST`, `GEMINI_OUTPUT_TOKEN_COST`
 
-#### 1.5 Create Directory Structure
-Create folders: `components/`, `components/ui/`, `components/providers/`, `hooks/`, `stores/`, `lib/`, `lib/supabase/`, `lib/ai/`, `types/`, `constants/`
+#### 1.5 Create Directory Structure ✅
+Create feature-based and hexagonal architecture folders:
+- `features/leads/`, `features/upload/`, `features/scoring/`, `features/progress/`, `features/export/`, `features/analytics/`
+- Each feature with: `components/`, `hooks/`, `lib/`, `stores/` (as needed)
+- `components/ui/`, `components/common/`, `components/providers/`
+- `hooks/`, `stores/` (global)
+- `server/domain/entities/`, `server/domain/interfaces/repositories/`, `server/domain/interfaces/services/`
+- `server/application/commands/`, `server/application/queries/`
+- `server/infrastructure/repositories/`, `server/infrastructure/services/`, `server/infrastructure/supabase/`
+- `lib/`, `types/`
 
-#### 1.6 Create Utility Files
+#### 1.6 Create Utility Files ✅
 - Create `lib/utils.ts` with `cn()` helper for className merging
 - Create `types/lead.ts` with Lead, LeadStatus, and API response types
+- Create `types/csv.ts` with CSV schema types
+- Create `types/api.ts` with API response types
 
 ---
 
-### Phase 2: Database Setup (Supabase Migrations)
+### Phase 2: Database Setup (Supabase Migrations) ✅ COMPLETED
 
-#### 2.1 Initialize Supabase CLI
+#### 2.1 Initialize Supabase CLI ✅
 Run `supabase init` to create `supabase/` directory with config. Link to existing project with `supabase link --project-ref <project-id>`.
 
-#### 2.2 Create Leads Table Migration
+#### 2.2 Create Leads Table Migration ✅
 Create migration file `supabase/migrations/001_create_leads_table.sql`:
 - Create `leads` table with columns: id (UUID), account_name, lead_first_name, lead_last_name, lead_job_title, account_domain, account_employee_range, account_industry, score, status, error_message, created_at, processed_at
 - Add CHECK constraint for status enum
 - Add CHECK constraint for score range (0-10)
 - Create indexes for status, score (DESC NULLS LAST), created_at
 
-#### 2.3 Create AI Usage Table Migration
+#### 2.3 Create AI Usage Table Migration ✅
 Create migration file `supabase/migrations/002_create_ai_usage_table.sql`:
 - Create `ai_usage` table with columns: id (UUID), lead_id (FK), model, input_tokens, output_tokens, cost, created_at
 - Add foreign key constraint referencing leads(id) with ON DELETE CASCADE
 - Create index for lead_id
 
-#### 2.4 Create RLS Policies Migration
+#### 2.4 Create RLS Policies Migration ✅
 Create migration file `supabase/migrations/003_enable_rls.sql`:
 - Enable RLS on both tables
 - Create permissive policies allowing all operations (no auth required)
 
-#### 2.5 Apply Migrations
+#### 2.5 Apply Migrations ✅
 Run `supabase db push` to apply all migrations to the remote database. Verify schema in Supabase Studio.
 
 ---
 
-### Phase 3: CSV Upload UI
+### Phase 3: CSV Upload Feature (UI First) ✅ COMPLETED
 
-#### 3.1 Create Supabase Browser Client
-Create `lib/supabase/client.ts` with `createBrowserClient` for client-side Supabase access.
+Build the upload UI first so you can test it visually before connecting to the server.
 
-#### 3.2 Create TanStack Query Provider
+#### 3.1 Create TanStack Query Provider ✅
 Create `components/providers/query-provider.tsx` with QueryClientProvider wrapper component.
 
-#### 3.3 Create Upload State Store
-Create `stores/upload-store.ts` Zustand store with: isUploading, error, setUploading(), setError(), reset().
-
-#### 3.4 Create CSV Upload Component
-Create `components/csv-upload.tsx` with drag-and-drop zone using native HTML5 drag events. Display upload state from Zustand store. Accept .csv files only.
-
-#### 3.5 Update App Layout
+#### 3.2 Update App Layout ✅
 Update `app/layout.tsx` to wrap children with QueryProvider. Add Toaster component from sonner for notifications.
 
-#### 3.6 Create Main Page Layout
+#### 3.3 Create Upload State Store ✅
+Create `features/upload/stores/upload-store.ts` Zustand store with: isUploading, error, setUploading(), setError(), reset().
+
+#### 3.4 Create CSV Parser Utility ✅
+Create `features/upload/lib/csv-parser.ts` using papaparse to parse CSV files. Validate required columns with zod schema. Return typed array of lead rows or validation errors.
+
+#### 3.5 Create CSV Upload Component ✅
+Create `features/upload/components/csv-upload.tsx` with drag-and-drop zone using native HTML5 drag events. Display upload state from Zustand store. Accept .csv files only.
+
+#### 3.6 Create Upload Hook (with mock) ✅
+Create `features/upload/hooks/use-upload.ts` with `useMutation` from TanStack Query. Initially mock the API call to test UI behavior. Handle FormData creation, update Zustand store with progress/error, show toast notifications.
+
+#### 3.7 Create Main Page Layout ✅
 Rewrite `app/page.tsx` with header "Lead Scoring" and CSVUpload component. Basic responsive layout with Tailwind.
 
-#### 3.7 TEST: Upload UI
-Verify upload component renders, accepts file drag/drop and click selection, shows file name after selection.
+#### 3.8 TEST: Upload UI ✅
+Test drag-and-drop, file selection, loading states, and error display with mocked responses.
 
 ---
 
-### Phase 4: CSV Upload API
+### Phase 4: Upload API & Server Infrastructure
 
-#### 4.1 Create Supabase Server Client
-Create `lib/supabase/server.ts` with `createServerClient` using cookies for server-side Supabase access.
+Build the server-side foundation to enable the upload endpoint.
 
-#### 4.2 Create CSV Parser Utility
-Create `lib/csv-parser.ts` using papaparse to parse CSV files. Validate required columns with zod schema. Return typed array of lead rows or validation errors. Handle edge cases: quoted fields, international characters, missing industry.
+#### 4.1 Create Domain Entities
+Create `server/domain/entities/lead.ts`:
+- Lead entity with all properties and validation
+- LeadStatus enum
 
-#### 4.3 Create Upload API Endpoint
+Create `server/domain/entities/ai-usage.ts`:
+- AIUsage entity with token and cost tracking
+
+#### 4.2 Create Repository Interfaces
+Create `server/domain/interfaces/repositories/lead-repository.interface.ts`:
+```typescript
+interface ILeadRepository {
+  findById(id: string): Promise<Lead | null>;
+  findAll(options: FindLeadsOptions): Promise<{ leads: Lead[]; total: number }>;
+  findPendingIds(): Promise<string[]>;
+  create(leads: CreateLeadInput[]): Promise<Lead[]>;
+  updateStatus(id: string, status: LeadStatus, errorMessage?: string): Promise<void>;
+  updateScore(id: string, score: number): Promise<void>;
+  getProgressStats(): Promise<ProgressStats>;
+  findCompleted(): Promise<Lead[]>;
+}
+```
+
+Create `server/domain/interfaces/repositories/ai-usage-repository.interface.ts`:
+```typescript
+interface IAIUsageRepository {
+  create(usage: CreateAIUsageInput): Promise<AIUsage>;
+  getAnalytics(): Promise<AnalyticsData>;
+}
+```
+
+#### 4.3 Create Service Interfaces
+Create `server/domain/interfaces/services/scoring-service.interface.ts`:
+```typescript
+interface IScoringService {
+  scoreLead(lead: Lead): Promise<ScoringResult>;
+}
+```
+
+Create `server/domain/interfaces/services/queue-service.interface.ts`:
+```typescript
+interface IQueueService {
+  enqueueLeads(leadIds: string[]): Promise<void>;
+}
+```
+
+#### 4.4 Create Supabase Clients
+Create `server/infrastructure/supabase/client.ts` with `createBrowserClient` for client-side.
+Create `server/infrastructure/supabase/server.ts` with `createServerClient` using cookies.
+Create `server/infrastructure/supabase/admin.ts` with service role client.
+
+#### 4.5 Create Repository Implementations
+Create `server/infrastructure/repositories/supabase-lead.repository.ts`:
+- Implement `ILeadRepository` using Supabase admin client
+- All database operations for leads
+
+Create `server/infrastructure/repositories/supabase-ai-usage.repository.ts`:
+- Implement `IAIUsageRepository` using Supabase admin client
+- All database operations for AI usage tracking
+
+#### 4.6 Create Upload Leads Command
+Create `server/application/commands/upload-leads.command.ts`:
+- Accept parsed CSV rows
+- Validate lead data
+- Use `ILeadRepository` to create leads
+- Return created lead IDs
+
+#### 4.7 Create Upload API Endpoint
 Create `app/api/leads/upload/route.ts`:
 - Accept POST with multipart/form-data
 - Parse CSV using csv-parser utility
-- Validate all rows have required fields
-- Bulk insert leads to Supabase with status "pending"
+- Use `UploadLeadsCommand` to process
 - Return `{ success: boolean, count: number, leadIds: string[] }`
 
-#### 4.4 Create Upload Hook
-Create `hooks/use-upload.ts` with `useMutation` from TanStack Query. Handle FormData creation, call upload API, update Zustand store with progress/error, invalidate queries on success, show toast notifications.
+#### 4.8 Update Upload Hook to Use Real API
+Update `features/upload/hooks/use-upload.ts` to call real `/api/leads/upload` endpoint. Invalidate queries on success.
 
-#### 4.5 Integrate Upload Component with Hook
-Update `components/csv-upload.tsx` to use `useUpload` hook. Call mutation on file selection. Show loading state during upload. Show success/error toasts.
-
-#### 4.6 TEST: CSV Upload Flow
-Upload leads.csv file. Verify 200 leads appear in Supabase `leads` table with status "pending".
+#### 4.9 TEST: Upload Integration
+Upload leads.csv file. Verify leads appear in Supabase with status "pending".
 
 ---
 
-### Phase 5: Leads Table
+### Phase 5: Queue & AI Scoring
 
-#### 5.1 Create Table State Store
-Create `stores/table-store.ts` Zustand store with: sortBy (default: "score"), sortOrder (default: "desc"), setSorting().
+Build the queue processing system and AI scoring infrastructure.
 
-#### 5.2 Create Get Leads API Endpoint
-Create `app/api/leads/route.ts`:
-- Accept GET with query params: sortBy, sortOrder
-- Query Supabase with dynamic ORDER BY (default: score DESC NULLS LAST)
-- Return `{ leads: Lead[], total: number }`
+#### 5.1 Create Persona Constants
+Create `features/scoring/constants/persona.ts` with structured data from persona_spec.md:
+- Company size categories and employee ranges
+- Job title priorities by company size
+- Department priorities
+- Seniority relevance matrix
+- Hard and soft exclusions lists
 
-#### 5.3 Create Leads Hook
-Create `hooks/use-leads.ts` with `useQuery` from TanStack Query. Read sorting params from table store. Refetch when sorting changes.
+#### 5.2 Create AI Scoring Prompt Builder
+Create `features/scoring/lib/scoring-prompt.ts` with `buildScoringPrompt(lead)` function. Include full persona specification in prompt. Request JSON output with score (0-10) field.
 
-#### 5.4 Create Score Badge Component
-Create `components/score-badge.tsx` displaying score with color coding:
+#### 5.3 Create Scoring Service Implementation
+Create `server/infrastructure/services/gemini-scoring.service.ts`:
+- Implement `IScoringService` using Vercel AI SDK with Google Gemini
+- Include persona specification in prompts
+- Return score and token usage
+
+#### 5.4 Create Queue Service Implementation
+Create `server/infrastructure/services/vercel-queue.service.ts`:
+- Implement `IQueueService`
+- Use @vercel/queue to enqueue lead IDs
+
+#### 5.5 Create Score Lead Command
+Create `server/application/commands/score-lead.command.ts`:
+- Accept lead ID
+- Fetch lead from repository
+- Update status to "processing"
+- Call scoring service
+- Update lead with score
+- Log AI usage
+- Handle errors with status update
+
+#### 5.6 Create Queue Consumer Endpoint
+Create `app/api/queue/process/route.ts`:
+- Accept POST with `{ leadId: string }`
+- Use `ScoreLeadCommand` to process
+- Return success/error response
+
+#### 5.7 Update Upload Command to Enqueue
+Update `UploadLeadsCommand` to use `IQueueService` to enqueue leads after creation.
+
+#### 5.8 TEST: AI Scoring
+Upload a small CSV (5-10 leads). Verify leads transition from pending → processing → completed. Check ai_usage table.
+
+---
+
+### Phase 6: Leads Table Feature
+
+Build the leads table UI and API to display processed leads.
+
+#### 6.1 Create Table State Store
+Create `features/leads/stores/table-store.ts` Zustand store with: sortBy (default: "score"), sortOrder (default: "desc"), setSorting().
+
+#### 6.2 Create Score Badge Component
+Create `features/leads/components/score-badge.tsx` displaying score with color coding:
 - 0-2: red (poor fit)
 - 3-4: orange (weak fit)
 - 5-6: yellow (moderate fit)
@@ -359,168 +579,188 @@ Create `components/score-badge.tsx` displaying score with color coding:
 - 9-10: emerald (excellent fit)
 - null: gray (pending)
 
-#### 5.5 Create Leads Table Component
-Create `components/leads-table.tsx` using shadcn/ui Table. Columns: Name, Job Title, Company, Size, Industry, Score, Status. Clickable headers for sorting. Use useLeads hook for data. Display ScoreBadge for scores. Show status badges (pending/processing/completed/error).
+#### 6.3 Create Leads Table Skeleton
+Create `features/leads/components/leads-table-skeleton.tsx` for loading state.
 
-#### 5.6 Add Leads Table to Page
+#### 6.4 Create Get Leads Query
+Create `server/application/queries/get-leads.query.ts`:
+- Accept sorting options
+- Return leads with pagination info
+
+#### 6.5 Create Get Leads API Endpoint
+Create `app/api/leads/route.ts`:
+- Accept GET with query params: sortBy, sortOrder
+- Use `GetLeadsQuery` to fetch
+- Return `{ leads: Lead[], total: number }`
+
+#### 6.6 Create Leads Hook
+Create `features/leads/hooks/use-leads.ts` with `useQuery` from TanStack Query. Read sorting params from table store. Call real `/api/leads` endpoint.
+
+#### 6.7 Create Leads Table Component
+Create `features/leads/components/leads-table.tsx` using shadcn/ui Table. Columns: Name, Job Title, Company, Size, Industry, Score, Status. Clickable headers for sorting. Use useLeads hook for data.
+
+#### 6.8 Add Leads Table to Page
 Update `app/page.tsx` to include LeadsTable component below CSVUpload.
 
-#### 5.7 TEST: Leads Table
-Verify table displays uploaded leads. Click column headers to test sorting. Verify score column sorts DESC by default.
+#### 6.9 TEST: Leads Table
+Verify table displays leads from database. Click column headers to test sorting. Test loading skeleton.
 
 ---
 
-### Phase 6: AI Scoring & Queue Processing
+### Phase 7: Progress Tracking Feature
 
-#### 6.1 Create Supabase Admin Client
-Create `lib/supabase/admin.ts` with service role client for server-side operations (bypasses RLS).
+Build the progress tracking UI and API.
 
-#### 6.2 Create Persona Constants
-Create `constants/persona.ts` with structured data from persona_spec.md:
-- Company size categories and employee ranges
-- Job title priorities by company size
-- Department priorities
-- Seniority relevance matrix
-- Hard and soft exclusions lists
-- Positive and negative signals
+#### 7.1 Create Get Progress Query
+Create `server/application/queries/get-lead-progress.query.ts`:
+- Return counts by status
 
-#### 6.3 Create AI Scoring Prompt Builder
-Create `lib/ai/scoring-prompt.ts` with `buildScoringPrompt(lead)` function. Include full persona specification in prompt. Request JSON output with score (0-10) field. Weight 60% on title fit, 40% on business fit.
+#### 7.2 Create Progress API Endpoint
+Create `app/api/leads/progress/route.ts`:
+- Use `GetLeadProgressQuery` to fetch stats
+- Return `{ total, pending, processing, completed, error }`
 
-#### 6.4 Create Gemini Client
-Create `lib/ai/gemini-client.ts`:
-- Configure Vercel AI SDK with Google provider
-- Use model "gemini-3.0-flash"
-- Create `scoreLead(lead)` function that calls Gemini, parses JSON response
-- Return score + token usage (input/output tokens)
-- Calculate cost from token counts
+#### 7.3 Create Progress Hook
+Create `features/progress/hooks/use-progress.ts` with `useQuery`. Enable refetchInterval (2 seconds) when pending + processing > 0.
 
-#### 6.5 Create Queue Consumer Endpoint
-Create `app/api/queue/process/route.ts`:
-- Accept POST with `{ leadId: string }`
-- Fetch lead from Supabase by ID
-- Update status to "processing"
-- Call scoreLead() from Gemini client
-- Update lead with score, status "completed", processed_at timestamp
-- Insert usage record to ai_usage table
-- On error: update status to "error" with error_message
-- Return success/error response
+#### 7.4 Create Progress Indicator Component
+Create `features/progress/components/progress-indicator.tsx`:
+- Display progress bar (completed / total * 100)
+- Show counts: "X pending, Y processing, Z completed, W errors"
+- Hide when total is 0
 
-#### 6.6 Update Upload API to Enqueue Leads
-Update `app/api/leads/upload/route.ts`:
-- After bulk insert, enqueue each lead ID using @vercel/queue `send()` function
-- Target topic/queue for processing
+#### 7.5 Add Progress to Page
+Update `app/page.tsx` to include ProgressIndicator between CSVUpload and LeadsTable.
 
-#### 6.7 TEST: AI Scoring
-Upload a small CSV (5-10 leads). Verify leads transition from pending → processing → completed. Verify scores are populated. Check ai_usage table for token/cost records.
+#### 7.6 TEST: Progress Tracking
+Upload CSV. Verify progress bar updates as leads are processed.
 
 ---
 
-### Phase 7: Real-time Updates (Supabase Broadcast)
+### Phase 8: Real-time Updates
 
-#### 7.1 Create Realtime Hook
-Create `hooks/use-realtime-leads.ts`:
-- Subscribe to Supabase Broadcast channel "leads-updates" with `{ config: { broadcast: { self: true } } }`
-- Listen for 'lead-scored' broadcast events
+Add real-time UI updates when leads are scored.
+
+#### 8.1 Create Realtime Hook
+Create `features/leads/hooks/use-realtime-leads.ts`:
+- Subscribe to Supabase Broadcast channel "leads-updates"
 - On event, invalidate leads and progress queries
 - Show toast notification with lead name and score
 
-#### 7.2 Update Queue Consumer to Broadcast
+#### 8.2 Update Queue Consumer to Broadcast
 Update `app/api/queue/process/route.ts`:
-- After scoring a lead, send broadcast message to "leads-updates" channel
+- After scoring, send broadcast message to "leads-updates" channel
 - Event type: 'lead-scored'
 - Payload: `{ leadId, leadName, score, status }`
 
-#### 7.3 Integrate Realtime in Page
+#### 8.3 Integrate Realtime in Page
 Update `app/page.tsx` to call `useRealtimeLeads()` hook for automatic updates.
 
-#### 7.4 TEST: Real-time Updates
-Open app in two browser tabs. Upload CSV in one tab. Verify both tabs update simultaneously as leads are scored. Verify toast notifications appear for completed leads.
+#### 8.4 TEST: Real-time Updates
+Open app in two browser tabs. Upload CSV in one tab. Verify both tabs update simultaneously.
 
 ---
 
-### Phase 8: Progress Indicator
+### Phase 9: Export Feature
 
-#### 8.1 Create Progress API Endpoint
-Create `app/api/leads/progress/route.ts`:
-- Query Supabase for count by status
-- Return `{ total: number, pending: number, processing: number, completed: number, error: number }`
+Build the CSV export functionality.
 
-#### 8.2 Create Progress Hook
-Create `hooks/use-progress.ts` with `useQuery` from TanStack Query. Enable refetchInterval (2 seconds) when pending + processing > 0. Disable polling when all complete.
+#### 9.1 Create Export Leads Query
+Create `server/application/queries/export-leads.query.ts`:
+- Return completed leads formatted for CSV export
 
-#### 8.3 Create Progress Indicator Component
-Create `components/progress-indicator.tsx`:
-- Display progress bar (completed / total * 100)
-- Show counts: "X pending, Y processing, Z completed, W errors"
-- Animate progress bar changes
-- Hide when total is 0
-
-#### 8.4 Add Progress Indicator to Page
-Update `app/page.tsx` to include ProgressIndicator between CSVUpload and LeadsTable.
-
-#### 8.5 TEST: Progress Indicator
-Upload CSV. Verify progress bar updates as leads are processed. Verify counts are accurate. Verify polling stops when complete.
-
----
-
-### Phase 9: Export & Analytics
-
-#### 9.1 Create Export API Endpoint
+#### 9.2 Create Export API Endpoint
 Create `app/api/leads/export/route.ts`:
-- Query all completed leads from Supabase
-- Generate CSV string with columns: account_name, lead_first_name, lead_last_name, lead_job_title, account_domain, account_employee_range, account_industry, score
-- Return with Content-Type: text/csv and Content-Disposition: attachment header
+- Use `ExportLeadsQuery` to get completed leads
+- Generate CSV string
+- Return with Content-Type: text/csv
 
-#### 9.2 Create Export Hook
-Create `hooks/use-export.ts`:
-- Fetch from export API
+#### 9.3 Create Export Hook
+Create `features/export/hooks/use-export.ts`:
+- Call `/api/leads/export` endpoint
 - Create blob and trigger download
-- Return loading state and triggerExport function
 
-#### 9.3 Create Export Button Component
-Create `components/export-button.tsx`:
+#### 9.4 Create Export Button Component
+Create `features/export/components/export-button.tsx`:
 - Button that calls triggerExport from hook
 - Show loading spinner during download
 - Disable when no completed leads
 
-#### 9.4 Create Analytics API Endpoint
-Create `app/api/analytics/route.ts`:
-- Query ai_usage table for aggregates
-- Return `{ totalCost: number, avgCostPerLead: number, totalInputTokens: number, totalOutputTokens: number, avgTokensPerLead: number, totalLeadsScored: number }`
+#### 9.5 Add Export to Page
+Update `app/page.tsx` to add ExportButton in header area.
 
-#### 9.5 Add Export Button to Page
-Update `app/page.tsx` to include ExportButton in header area.
-
-#### 9.6 TEST: Export & Analytics
-Score some leads. Click export button. Verify CSV downloads with correct data. Call /api/analytics and verify stats are accurate.
+#### 9.6 TEST: Export
+Score some leads. Click export. Verify CSV file downloads with correct data.
 
 ---
 
-### Phase 10: Final Polish
+### Phase 10: Analytics Feature
 
-#### 10.1 Add Empty State
-Update LeadsTable to show friendly empty state when no leads exist: "No leads yet. Upload a CSV to get started."
+Add AI usage analytics display.
 
-#### 10.2 Add Loading Skeletons
-Add skeleton loading states to LeadsTable while fetching data.
+#### 10.1 Create Get Analytics Query
+Create `server/application/queries/get-analytics.query.ts`:
+- Return aggregated AI usage stats
 
-#### 10.3 Add Error Handling
-Add error boundaries. Show user-friendly error messages. Add retry buttons for failed operations.
+#### 10.2 Create Analytics API Endpoint
+Create `app/api/analytics/route.ts`:
+- Use `GetAnalyticsQuery` to fetch aggregates
+- Return analytics data
 
-#### 10.4 Run Linter
+#### 10.3 Create Analytics Hook
+Create `features/analytics/hooks/use-analytics.ts` with `useQuery`.
+
+#### 10.4 Create Analytics Card Component (Optional)
+Create `features/analytics/components/analytics-card.tsx`:
+- Display total cost, avg cost per lead, total tokens
+
+#### 10.5 TEST: Analytics
+Score some leads. Verify analytics API returns correct aggregates.
+
+---
+
+### Phase 11: Final Polish
+
+#### 11.1 Add Empty State
+Update LeadsTable to show friendly empty state when no leads exist.
+
+#### 11.2 Add Error Handling
+Create `components/common/error-boundary.tsx`. Add error boundaries around features.
+
+#### 11.3 Run Linter
 Run `pnpm lint` and fix any issues.
 
-#### 10.5 End-to-End Test
+#### 11.4 End-to-End Test
 Full test with leads.csv: upload → verify table → wait for scoring → check real-time updates → export CSV → verify analytics
 
 ---
 
 ## Verification
 
-1. **Upload Test**: Upload leads.csv, verify 200 leads appear with "pending" status
-2. **Queue Test**: Verify leads transition to "processing" then "completed" with scores
-3. **Real-time Test**: Open two browser tabs, verify both update simultaneously
-4. **Sorting Test**: Click column headers, verify server-side sorting works
-5. **Export Test**: Download CSV, verify it contains scores
-6. **Cost Tracking**: Query ai_usage table, verify token counts and costs logged
+### Phase 3: Upload UI (Completed)
+1. **Upload UI Test**: Drag-and-drop CSV, verify loading states and mock success/error toasts
+
+### Phase 4: Upload Integration
+2. **Upload Integration Test**: Upload leads.csv, verify leads appear in Supabase with "pending" status
+
+### Phase 5: Queue & AI Scoring
+3. **Scoring Test**: Verify leads transition pending → processing → completed with scores
+4. **Cost Tracking**: Query ai_usage table, verify token counts and costs logged
+
+### Phase 6: Leads Table
+5. **Table Test**: Verify real leads display, server-side sorting works
+
+### Phase 7: Progress Tracking
+6. **Progress Test**: Verify progress bar updates as leads are processed
+
+### Phase 8: Real-time Updates
+7. **Real-time Test**: Open two browser tabs, verify both update simultaneously
+
+### Phase 9: Export
+8. **Export Test**: Download CSV, verify it contains correct data
+
+### Phase 10: Analytics
+9. **Analytics Test**: Score some leads, verify aggregates are correct
+
+### Phase 11: End-to-End
+10. **Full Flow**: Upload → table → scoring → real-time → export → analytics
