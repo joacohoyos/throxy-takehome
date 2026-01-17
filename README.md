@@ -180,3 +180,8 @@ Uses Supabase Broadcast channels:
 | `/api/leads` | GET | Get leads (supports `sortBy`, `sortOrder`) |
 | `/api/leads/progress` | GET | Get processing progress stats |
 
+# Architecture Diagrams
+
+<img width="756" height="691" alt="image" src="https://github.com/user-attachments/assets/ec3ef663-2145-417a-977e-5bf4f80b76ac" />
+
+
