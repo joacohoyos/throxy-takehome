@@ -45,14 +45,21 @@ export function useRealtimeLeads() {
           return {
             ...oldData,
             leads: [...newLeads, ...mergedLeads].toSorted((a, b) => {
-              const aValue =
-                (a[sort.sortBy as keyof Lead] as any)?.toString() ?? "";
-              const bValue =
-                (b[sort.sortBy as keyof Lead] as any)?.toString() ?? "";
-              if (sort.sortOrder === "asc") {
-                return aValue.localeCompare(bValue);
+              const aValue = (a[sort.sortBy as keyof Lead] as any) ?? "";
+              const bValue = (b[sort.sortBy as keyof Lead] as any) ?? "";
+
+              if (isNaN(aValue) || isNaN(bValue)) {
+                if (sort.sortOrder === "asc") {
+                  return aValue.localeCompare(bValue);
+                } else {
+                  return bValue.localeCompare(aValue);
+                }
               } else {
-                return bValue.localeCompare(aValue);
+                if (sort.sortOrder === "asc") {
+                  return (aValue as number) - (bValue as number);
+                } else {
+                  return (bValue as number) - (aValue as number);
+                }
               }
             }),
             total: oldData.total + newLeads.length,

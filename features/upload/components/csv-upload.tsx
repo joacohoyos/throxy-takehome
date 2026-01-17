@@ -53,10 +53,13 @@ export function CSVUpload() {
             onClear={handleClear}
             disabled={isUploading}
           />
-          <div className="flex justify-end">
+          <div className="flex flex-col items-end gap-2">
             <Button onClick={handleUpload} disabled={isUploading}>
               {isUploading ? 'Uploading...' : 'Upload Leads'}
             </Button>
+            <p className="text-xs text-muted-foreground">
+              This may take a moment due to Vercel workflow limitations
+            </p>
           </div>
         </div>
       )}

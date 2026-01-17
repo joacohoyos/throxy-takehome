@@ -45,7 +45,9 @@ function extractRetryAfter(error: unknown): string {
   return "1m";
 }
 
-async function executeScoringAndBroadcast(leadId: string): Promise<ScoreLeadResult> {
+async function executeScoringAndBroadcast(
+  leadId: string,
+): Promise<ScoreLeadResult> {
   "use step";
 
   const leadRepository = new SupabaseLeadRepository();
@@ -68,6 +70,7 @@ async function executeScoringAndBroadcast(leadId: string): Promise<ScoreLeadResu
 
     return result;
   } catch (error) {
+    console.error("Error during scoring and broadcasting:", error);
     if (error instanceof Error && error.message.startsWith("Lead not found:")) {
       throw new FatalError(error.message);
     }
@@ -82,8 +85,8 @@ async function executeScoringAndBroadcast(leadId: string): Promise<ScoreLeadResu
     throw error;
   }
 }
-
-export async function scoreLeadWorkflow(
+executeScoringAndBroadcast.maxRetries = 0;
+export async function scoreLeadWorkflowV1(
   leadId: string,
 ): Promise<ScoreLeadResult> {
   "use workflow";
@@ -98,4 +101,4 @@ export async function scoreLeadWorkflow(
 
   return result;
 }
-scoreLeadWorkflow.maxConcurrency = 1;
+scoreLeadWorkflowV1.maxRetries = 0;

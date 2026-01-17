@@ -1,8 +1,8 @@
-import type { ILeadRepository } from '@/server/domain/interfaces/repositories/lead-repository.interface';
-import type { IQueueService } from '@/server/domain/interfaces/services/queue-service.interface';
-import type { CreateLeadInput, Lead } from '@/server/domain/entities/lead';
-import type { CsvRow } from '@/types/csv';
-import { broadcastLeadsUpdated } from '@/server/infrastructure/services/broadcast.service';
+import type { ILeadRepository } from "@/server/domain/interfaces/repositories/lead-repository.interface";
+import type { IQueueService } from "@/server/domain/interfaces/services/queue-service.interface";
+import type { CreateLeadInput, Lead } from "@/server/domain/entities/lead";
+import type { CsvRow } from "@/types/csv";
+import { broadcastLeadsUpdated } from "@/server/infrastructure/services/broadcast.service";
 
 export interface UploadLeadsResult {
   leads: Lead[];
@@ -15,7 +15,7 @@ function mapCsvRowToLeadInput(row: CsvRow): CreateLeadInput {
     accountName: row.account_name,
     leadFirstName: row.lead_first_name,
     leadLastName: row.lead_last_name,
-    leadJobTitle: row.lead_job_title ?? '',
+    leadJobTitle: row.lead_job_title ?? "",
     accountDomain: row.account_domain,
     accountEmployeeRange: row.account_employee_range,
     accountIndustry: row.account_industry ?? null,
@@ -25,12 +25,12 @@ function mapCsvRowToLeadInput(row: CsvRow): CreateLeadInput {
 export class UploadLeadsCommand {
   constructor(
     private leadRepository: ILeadRepository,
-    private queueService?: IQueueService
+    private queueService?: IQueueService,
   ) {}
 
   async execute(rows: CsvRow[]): Promise<UploadLeadsResult> {
     if (rows.length === 0) {
-      throw new Error('No leads to upload');
+      throw new Error("No leads to upload");
     }
 
     const leadInputs = rows.map(mapCsvRowToLeadInput);
@@ -38,9 +38,14 @@ export class UploadLeadsCommand {
     const leadIds = leads.map((lead) => lead.id);
 
     await broadcastLeadsUpdated(leads);
-
     if (this.queueService) {
-      await this.queueService.enqueueLeads(leadIds);
+      await this.queueService.enqueueLeads(leadIds).catch((error) => {
+        console.error(
+          "Failed to enqueue leads for scoring:",
+          error instanceof Error ? error.message : error,
+        );
+        throw error;
+      });
     }
 
     return {
