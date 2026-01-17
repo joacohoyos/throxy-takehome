@@ -1,3 +1,4 @@
+[Video demo!](https://drive.google.com/file/d/1GMXxO80aNLlHqK-YjGVYtED8cLp8bzGU/view?usp=sharing)
 # Throxy Lead Scoring Application
 
 A lead scoring application that processes CSV files containing B2B leads, scores them using AI based on Throxy's ideal customer profile, and displays results in real-time.
