@@ -4,7 +4,6 @@ export interface AIUsage {
   model: string;
   inputTokens: number;
   outputTokens: number;
-  cost: number;
   createdAt: Date;
 }
 
@@ -13,7 +12,6 @@ export interface CreateAIUsageInput {
   model: string;
   inputTokens: number;
   outputTokens: number;
-  cost: number;
 }
 
 export interface AnalyticsData {
@@ -22,5 +20,4 @@ export interface AnalyticsData {
   avgInputTokensPerLead: number;
   avgOutputTokensPerLead: number;
   totalLeadsScored: number;
-  totalCost: number;
 }

@@ -8,7 +8,6 @@ interface AIUsageRow {
   model: string;
   input_tokens: number;
   output_tokens: number;
-  cost: number;
   created_at: string;
 }
 
@@ -19,7 +18,6 @@ function mapRowToAIUsage(row: AIUsageRow): AIUsage {
     model: row.model,
     inputTokens: row.input_tokens,
     outputTokens: row.output_tokens,
-    cost: row.cost,
     createdAt: new Date(row.created_at),
   };
 }
@@ -34,7 +32,6 @@ export class SupabaseAIUsageRepository implements IAIUsageRepository {
         model: usage.model,
         input_tokens: usage.inputTokens,
         output_tokens: usage.outputTokens,
-        cost: usage.cost,
       })
       .select()
       .single();
@@ -48,7 +45,7 @@ export class SupabaseAIUsageRepository implements IAIUsageRepository {
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from('ai_usage')
-      .select('input_tokens, output_tokens, cost');
+      .select('input_tokens, output_tokens');
 
     if (error) throw error;
 
@@ -59,13 +56,11 @@ export class SupabaseAIUsageRepository implements IAIUsageRepository {
         avgInputTokensPerLead: 0,
         avgOutputTokensPerLead: 0,
         totalLeadsScored: 0,
-        totalCost: 0,
       };
     }
 
-    const totalInputTokens = data.reduce((sum, row) => sum + row.input_tokens, 0);
-    const totalOutputTokens = data.reduce((sum, row) => sum + row.output_tokens, 0);
-    const totalCost = data.reduce((sum, row) => sum + Number(row.cost), 0);
+    const totalInputTokens = data.reduce((sum: number, row: { input_tokens: number }) => sum + row.input_tokens, 0);
+    const totalOutputTokens = data.reduce((sum: number, row: { output_tokens: number }) => sum + row.output_tokens, 0);
     const totalLeadsScored = data.length;
 
     return {
@@ -74,7 +69,6 @@ export class SupabaseAIUsageRepository implements IAIUsageRepository {
       avgInputTokensPerLead: Math.round(totalInputTokens / totalLeadsScored),
       avgOutputTokensPerLead: Math.round(totalOutputTokens / totalLeadsScored),
       totalLeadsScored,
-      totalCost,
     };
   }
 }
